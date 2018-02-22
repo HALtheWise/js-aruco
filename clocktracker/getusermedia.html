@@ -9,7 +9,7 @@
   <script type="text/javascript" src="aruco.js"></script> 
 
   <script>
-    var video, canvas, context, imageData, detector;
+    var video, canvas, context, imageData, detector, startTime;
   
     function onLoad(){
       video = document.getElementById("video");
@@ -40,6 +40,7 @@
       navigator.mediaDevices
         .getUserMedia({ video: {facingMode: "environment"} })
         .then(function(stream) {
+          startTime = Date.now();
           if ("srcObject" in video) {
             video.srcObject = stream;
           } else {
@@ -65,6 +66,7 @@
         var markers = detector.detect(imageData);
         drawCorners(markers);
         drawId(markers);
+        calculateDistances(markers);
       }
     }
 
@@ -72,7 +74,63 @@
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     }
-          
+
+    var centers = [];
+
+    function calculateDistances(markers){
+      var corners, corner, center, i, j;
+    
+      context.lineWidth = 3;
+
+      for (i = 0; i !== markers.length; ++ i){
+        corners = markers[i].corners;
+        
+        center = {time: (Date.now()-startTime)/1000.0, id: markers[i].id, x: 0, y:0};
+
+        for (j = 0; j !== corners.length; ++ j){
+          corner = corners[j];
+          center.x += corner.x;
+          center.y += corner.y;
+        }
+        center.x /= corners.length;
+        center.y /= corners.length;
+
+        centers.push(center);
+
+        context.strokeStyle = "purple";
+        context.strokeRect(center.x - 6, center.y - 5, 10, 10);
+      }
+    }
+
+    function getCSV(){
+      var ids = new Set();
+      for (var i = 0; i < centers.length; i++) {
+        ids.add(centers[i].id);
+      }
+      ids = Array.from(ids).sort();
+      console.log(ids);
+
+      var header = 'time,'+ids.join(',');
+      var rows = [header];
+
+      for (var i = 0; i < centers.length; i++) {
+        center = centers[i];
+
+        var row = [center.time];
+        for (var j = 0; j < ids.length; j++) {
+          if (center.id == ids[j]){
+            row.push(center.x);
+          } else {
+            row.push('');
+          }
+        }
+
+        rows.push(row.join(','));
+      }
+
+      return rows.join('\r\n')
+    }
+
     function drawCorners(markers){
       var corners, corner, i, j;
     
