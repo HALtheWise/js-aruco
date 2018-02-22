@@ -112,7 +112,7 @@
       ids = Array.from(ids).sort();
       console.log(ids);
 
-      var header = 'time,'+ids.join(',');
+      var header = 'time\t'+ids.join('\t');
       var rows = [header];
 
       for (var i = 0; i < centers.length; i++) {
@@ -127,10 +127,14 @@
           }
         }
 
-        rows.push(row.join(','));
+        rows.push(row.join('\t'));
       }
 
       return rows.join('\r\n')
+    }
+
+    function outputCSV(){
+      document.getElementById('output').value=getCSV();
     }
 
     function drawCorners(markers){
@@ -193,6 +197,13 @@
     <div style="margin: 10px;"><strong>-= Augmented Reality Marker Detector =-</strong></div>
     <video id="video" autoplay="true" style="display:none;"></video>
     <canvas id="canvas" style="width:640px; height:480px;"></canvas>
+
+    <br>
+    <button onclick="outputCSV()">Output data</button>
+    <button onclick="centers = []; outputCSV()">Reset</button>
+    <br>
+    <textarea cols=20 rows=10 id="output"></textarea>
+
     <div style="margin: 15px;"><strong>Powered by <a href="http://code.google.com/p/js-aruco/">js-aruco</a></strong></div>
   </center>
 
