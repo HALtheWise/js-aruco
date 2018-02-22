@@ -9,7 +9,7 @@
   <script type="text/javascript" src="aruco.js"></script> 
 
   <script>
-    var video, canvas, context, imageData, detector, startTime;
+    var video, canvas, context, imageData, detector, startTime, frameTime;
   
     function onLoad(){
       video = document.getElementById("video");
@@ -63,6 +63,8 @@
       if (video.readyState === video.HAVE_ENOUGH_DATA){
         snapshot();
 
+        frameTime = Date.now();
+
         var markers = detector.detect(imageData);
         drawCorners(markers);
         drawId(markers);
@@ -85,7 +87,7 @@
       for (i = 0; i !== markers.length; ++ i){
         corners = markers[i].corners;
         
-        center = {time: (Date.now()-startTime)/1000.0, id: markers[i].id, x: 0, y:0};
+        center = {time: (frameTime-startTime)/1000.0, id: markers[i].id, x: 0, y:0};
 
         for (j = 0; j !== corners.length; ++ j){
           corner = corners[j];
